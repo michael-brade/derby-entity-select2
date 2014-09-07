@@ -1,0 +1,23 @@
+{
+  "name": "d-select2",
+  "description": "",
+  "version": "0.0.0",
+  "main": "./index.js",
+  "keywords": [
+    "derby",
+    "derby-component"
+  ],
+  "scripts": {
+    "test": "echo 'No tests yet!'; exit(1);"
+  },
+  "author": {
+    "name": "Rohan Manaphati",
+    "email": "rohan@kjun-chen.de"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {
+    "derby": ">= 0.6.0 < 0.7"
+  }
+}
