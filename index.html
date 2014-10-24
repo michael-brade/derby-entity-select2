@@ -1,4 +1,8 @@
 <index:>
-  <div class="d-select2">
-
-  </div>
+    {#if equal(:self.inputtype, 'hidden')}
+        <input x-as="input" class="{{@cssclass}}" disabled="{{@disabled}}" form="{{@form}}" name="{{@name}}" style="{{@css}}" type="hidden">
+    {else}
+        <select x-as="select" autofocus="{{@autofocus}}" class="{{@ssclass}}" disabled="{{@disabled}}" form="{{@form}}" multiple="{{@multiple}}" name="{{@name}}" required="{{@required}}" size="{{@size}}" style="{{@css}}">
+            {{@content}}
+        </select>
+    {/}
