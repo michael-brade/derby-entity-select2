@@ -9,10 +9,10 @@ module.exports = Select2;
 function Select2() {}
 
 Select2.prototype.view = __dirname;
+Select2.prototype.style = __dirname;
 Select2.prototype.name = 'd-select2';
 
-Select2.prototype.init = function() {
-
+Select2.prototype.init = function(model) {
 };
 
 Select2.prototype.create = function(model, dom) {
@@ -21,7 +21,7 @@ Select2.prototype.create = function(model, dom) {
     $ = jQuery;
 
     if (typeof $.fn.select2 === 'undefined') {
-        return console.log('select2.jquery.js required to run select2')
+        return console.log('select2.jquery.js required to run select2');
     }
 
   var self = this
@@ -137,7 +137,7 @@ Select2.prototype.create = function(model, dom) {
   }
 
   var isHidden = opts.inputtype.get() === 'hidden'
-    , el = dom.element(isHidden ? 'input' : 'select');
+    , el = isHidden ? this.input : this.select;
 
   // parameters to pass to $.fn.select2
   var params = {
