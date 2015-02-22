@@ -1,5 +1,4 @@
-var _ = require('underscore')
-  , _s = require('underscore.string')
+var _ = require('lodash')
   , jQuery = require('jquery');
 
 
@@ -18,9 +17,8 @@ Select2.prototype.init = function(model) {
 Select2.prototype.create = function(model, dom) {
 
     require('./select2');
-    $ = jQuery;
 
-    if (typeof $.fn.select2 === 'undefined') {
+    if (typeof jQuery.fn.select2 === 'undefined') {
         return console.log('select2.jquery.js required to run select2');
     }
 
@@ -92,6 +90,12 @@ Select2.prototype.create = function(model, dom) {
     }
   }
 
+  function isBlank(str) {
+      //    return (!str || /^\s*$/.test(str)); //  !/\S/.test(str)
+      return (!str || !str.trim());
+  }
+
+
   _.keys(model.get(), unrecognized);
   _.keys(defaults, unrecognized);
 
@@ -117,8 +121,8 @@ Select2.prototype.create = function(model, dom) {
 
     opts[optfn] = undefined;
     if (typeof name === 'undefined') return;
-    if (_s.isBlank(name)) return (opts[optfn] = nofn);
-    if (DERBY.app[name]) return (opts[optfn] = DERBY.app[name]);
+    if (isBlank(name)) return (opts[optfn] = nofn);
+// TODO    if (DERBY.app[name]) return (opts[optfn] = DERBY.app[name]);
     console.log('cannot find function "' + name + '"');
   });
 
@@ -179,10 +183,10 @@ Select2.prototype.create = function(model, dom) {
     , width: opts.width.get()
   };
 
-  $(function () {
+  jQuery(function () {
     var datavalSet = valSet = false;
 
-    el = $(el).select2(params);
+    el = jQuery(el).select2(params);
     opts.container.set(el.select2('container'));
 
     // allow binding to the change event
