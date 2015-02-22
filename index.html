@@ -1,4 +1,20 @@
-<index:>
+<index: element='d-select2'>
+    {{if @hr}}
+    <div class="form-group">
+        <label class="col-lg-{{@offsetLg}} control-label">{{@label}}</label>
+        <div class="col-lg-{{@colLg}}">
+            <div as="input" class="form-control" id='{{@id || @idname}}' name='{{name || @idname}}' placeholder="{{@placeholder}}"></div>
+        </div>
+    </div>
+    {{else}}
+    <div class="form-group">
+        <label>{{@label}}</label>
+        <div as="input" class="form-control" id='{{@id || @idname}}' name='{{name || @idname}}' placeholder="{{@placeholder}}"></div>
+    </div>
+    {{/}}
+
+
+<old-index:>
 <!--    {{#if equal(:self.inputtype, 'hidden')}}
         <input as="input" class="{{@cssclass}}"
                disabled="{{@disabled}}" form="{{@form}}" name="{{@name}}" style="{{@css}}" type="hidden">
