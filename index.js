@@ -16,7 +16,7 @@ Select2.prototype.init = function(model) {
 
 Select2.prototype.create = function(model, dom) {
 
-    require('./select2');
+    require('select2');
 
     if (typeof jQuery.fn.select2 === 'undefined') {
         return console.log('select2.jquery.js required to run select2');
