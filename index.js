@@ -1,4 +1,4 @@
-var _ = require('lodash')
+var _ = require('lodash/collection')
   , jQuery = require('jquery');
 
 
@@ -8,7 +8,6 @@ module.exports = Select2;
 function Select2() {}
 
 Select2.prototype.view = __dirname;
-Select2.prototype.style = __dirname;
 Select2.prototype.name = 'd-select2';
 
 Select2.prototype.init = function(model) {
