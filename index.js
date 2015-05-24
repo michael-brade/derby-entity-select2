@@ -1,6 +1,4 @@
-var _ = require('lodash/collection')
-  , jQuery = require('jquery');
-
+var _ = require('lodash/collection');
 
 
 module.exports = Select2;
@@ -23,7 +21,6 @@ Select2.prototype.init = function(model) {
 
 Select2.prototype.create = function (model, dom) {
     require('select2');
-    $ = jQuery;
 
     if (typeof jQuery.fn.select2 === 'undefined') {
         return console.log('select2.jquery.js required to run select2');
@@ -78,46 +75,12 @@ Select2.prototype.create = function (model, dom) {
 
     // update model
     self.$element.on("change", function (e) {
-        if (self.internalChange) return;
+        if (self.internalChange)
+            return;
+
         self.internalChange = true;
+
         try {
-            if (e.added) {
-                var items = model.get('items');
-                var lowerText = e.added.text.toLowerCase();
-                var itemExists = false;
-
-                // ckeck if the item exists in the collection, if not - add it
-                if (self.key) {
-                    for (var i = 0, cnt = items.length; i < cnt; i++) {
-                        var item = items[i];
-                        if (item[self.text].toLowerCase() === lowerText) {
-                            itemExists = true;
-                            break;
-                        }
-                    }
-                } else {
-                    for (var j = 0, cnt1 = items.length; j < cnt1; j++) {
-                        var item1 = items[j];
-                        if (item1.toLowerCase() === lowerText) {
-                            itemExists = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!itemExists) {
-                    var newItem;
-                    if (self.key) {
-                        newItem = {};
-                        newItem[self.key] = e.added.id;
-                        newItem[self.text] = e.added.text;
-                    } else {
-                        newItem = e.added.text;
-                    }
-                    model.push('items', newItem);
-                }
-            }
-
             // update model
             var data = self.$element.select2('data');
             if (data && data.length > 0) {
