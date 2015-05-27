@@ -30,11 +30,11 @@ Select2.prototype.create = function (model, dom) {
 
     var self = this;
 
-    self.key = model.get('key');
-    self.text = model.get('text');
-    self.obj = model.get('obj');
-    self.single = model.get('single');
-    self.fixed = model.get('fixed');
+    self.key = self.getAttribute('key');
+    self.text = self.getAttribute('text');
+    self.obj = self.getAttribute('obj');
+    self.single = self.getAttribute('single');
+    self.fixed = self.getAttribute('fixed');
 
     // localization
     var noMatches = self.model.get('noMatches') || self.model.get('lang.select2.noMatches') || "No matches";
