@@ -1,5 +1,7 @@
-var _ = require('lodash/collection');
-
+var _ = {
+    map: require('lodash/collection/map'),
+    get: require('lodash/object/get')
+}
 
 module.exports = Select2;
 
@@ -50,7 +52,7 @@ Select2.prototype.create = function (model, dom) {
         tags: function () {
             var items = model.get('items');
             items = _.map(items, function (item) {
-                return self.key ? {id: item[self.key], text: item[self.text]} : {id: item, text: item};
+                return self.key ? {id: item[self.key], text: _.get(item, self.text)} : {id: item, text: item};
             });
             return items || [];
         }
