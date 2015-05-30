@@ -30,11 +30,27 @@ Select2.prototype.create = function (model, dom) {
 
     var self = this;
 
-    self.key = self.getAttribute('key');
-    self.text = self.getAttribute('text');
-    self.obj = self.getAttribute('obj');
-    self.single = self.getAttribute('single');
-    self.fixed = self.getAttribute('fixed');
+    // functions to see possible changes
+    function text() {
+        return self.getAttribute('text');
+    }
+
+    function key() {
+        return self.getAttribute('key');
+    }
+
+    function obj() {
+        return self.getAttribute('obj');
+    }
+
+    function single() {
+        return self.getAttribute('single');
+    }
+
+    function fixed() {
+        return self.getAttribute('fixed');
+    }
+
 
     // localization
     var noMatches = self.model.get('noMatches') || self.model.get('lang.select2.noMatches') || "No matches";
@@ -52,16 +68,22 @@ Select2.prototype.create = function (model, dom) {
         tags: function () {
             var items = model.get('items');
             items = _.map(items, function (item) {
-                return self.key ? {id: item[self.key], text: _.get(item, self.text)} : {id: item, text: item};
+                return key() ? {
+                    id: item[key()],
+                    text: _.get(item, text())
+                } : {
+                    id: item,
+                    text: item
+                };
             });
             return items || [];
         }
     };
 
-    if (self.single)
+    if (single())
         options.maximumSelectionSize = 1;
 
-    if (self.fixed)
+    if (fixed())
         options.createSearchChoice = function () {
             return null;
         };
@@ -87,19 +109,19 @@ Select2.prototype.create = function (model, dom) {
             var data = self.$element.select2('data');
             if (data && data.length > 0) {
                 data = _.map(data, function (item) {
-                    if (self.key) {
+                    if (key()) {
                         var value = {};
-                        value[self.key] = item.id;
-                        value[self.text] = item.text;
+                        value[key()] = item.id;
+                        value[text()] = item.text;
                         return value;
                     }
                     return item.text;
                 });
-                if (self.single) {
-                    data = self.obj ? data[0] : (self.key ? data[0][self.key] : data[0]);
+                if (single()) {
+                    data = obj() ? data[0] : (key() ? data[0][key()] : data[0]);
                 }
                 else {
-                    data = self.obj ? data : _.map(data, self.key);
+                    data = obj() ? data : _.map(data, key());
                 }
                 model.set('value', data);
             } else {
@@ -123,18 +145,18 @@ Select2.prototype.setValue = function (value) {
         self.internalChange = true;
 
         var data;
-        if (self.obj) {
-            if (self.single) {
+        if (obj()) {
+            if (single()) {
                 data = [
-                    {id: value[self.key], text: value[self.text]}
+                    {id: value[key()], text: value[text()]}
                 ];
             } else {
                 data = _.map(value, function (item) {
-                    return {id: item[self.key], text: item[self.text]};
+                    return {id: item[key()], text: item[text()]};
                 });
             }
         } else {
-            if (self.single) {
+            if (single()) {
                 data = [
                     {id: value, text: value}
                 ];
