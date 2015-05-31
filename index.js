@@ -58,14 +58,14 @@ Select2.prototype.create = function (model, dom) {
 
     // initialization
     self.$element = $(self.input);
+
     var options = {
-        formatNoMatches: function (term) {
-            return noMatches;
-        },
-        formatSelectionTooBig: function (maxSize) {
-            return onlyOneValue;
-        },
-        tags: function () {
+        allowClear: true,
+        //width: "element/style/resolve/function()",
+        //language: self.getAttribute('i18n'),
+        multiple: !self.single,
+        tags: !self.getAttribute('fixed'),
+        data: function () {
             var items = model.get('items');
             items = _.map(items, function (item) {
                 return key() ? {
@@ -79,14 +79,6 @@ Select2.prototype.create = function (model, dom) {
             return items || [];
         }
     };
-
-    if (single())
-        options.maximumSelectionSize = 1;
-
-    if (fixed())
-        options.createSearchChoice = function () {
-            return null;
-        };
 
     self.$element.select2(options);
 
