@@ -7,19 +7,16 @@
 -->
 <index: element='d-select2'>
 
-{{with @text as #text}}
-    <select as="input" id="{{@id}}" class="form-control" placeholder="{{@placeholder}}">
-        {{each @value as #option}}
-            <option value="{{#option[@key]}}" selected="selected">
-                {{#option[#text]}}
-            </option>
-        {{/}}
-        {{each @items as #option}}
-            <option value="{{#option[@key]}}">
-                {{#option[#text]}}
-            </option>
-        {{/}}
-    </select>
+{{with @key as #key}}
+    {{with @text as #text}}
+        <select as="input" id="{{@id}}" class="form-control" multiple="{{!@single}}">
+            {{each @items as #option}}
+                <option value="{{#option[#key]}}" selected="{{selected(#option[#key])}}">
+                    {{#option[#text]}}
+                </option>
+            {{/}}
+        </select>
+    {{/}}
 {{/}}
 
 <!--  {{@content}}-->

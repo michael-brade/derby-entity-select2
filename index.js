@@ -129,6 +129,36 @@ Select2.prototype.create = function (model, dom) {
 
 };
 
+/*
+    value is the key() attr
+    TODO write unit tests for each if
+*/
+Select2.prototype.selected = function (value) {
+    var self = this;
+    function key() {
+        return self.getAttribute('key');
+    }
+
+    var selected = this.getAttribute('value');
+
+    // nothing selected yet
+    if (selected === undefined)
+        return false;
+
+    if (selected.length)
+        // TODO: use for ... of for array
+        return _.find(selected, function (object) {
+            if (key())
+                return object[key()] == value;
+            else
+                return object == value;
+        }) != undefined;
+
+    if (key())
+        return selected[key()] == value;
+
+    return selected == value;
+}
 
 /* If needed, a custom data adapter has to be written instead of the old setValue() stuff!
 
