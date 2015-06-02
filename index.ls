@@ -48,7 +48,7 @@ export class Select2
 
         @.$element.select2(
             #allowClear: true   # makes only sense with a placeholder!
-            width: "resolve"    #element/style/function()
+            width: "auto" #"resolve"    #element/style/function()
             #language: @getAttribute('i18n')
             #maximumSelectionLength: 2
             #minimumResultsForSearch: Infinity    # never show search box
@@ -91,7 +91,7 @@ export class Select2
         value is the key() attr
         TODO write unit tests for each if
     */
-    selected: (value) ->
+    selected: (id) ->
         key = ~> @getAttribute('key')
 
         selected = @getAttribute('value')
@@ -104,15 +104,15 @@ export class Select2
             # TODO: use for ... of for array
             return _.find(selected, (object) ->
                 if (key())
-                    return object[key()] == value
+                    return object[key()] == id
                 else
-                    return object == value
+                    return object == id
             ) != undefined
 
         if (key())
-            return selected[key()] == value
+            return selected[key()] == id
 
-        return selected == value
+        return selected == id
 
 
 /* If needed, a custom data adapter has to be written instead of the old setValue() stuff!
