@@ -25,12 +25,6 @@ export class Select2
 
     create: (model, dom) !->
 
-        require 'select2'
-
-        if (typeof jQuery.fn.select2 === 'undefined')
-            return console.log 'select2.js is required to run select2'
-
-
         # functions to see possible changes
         text = ~> @getAttribute('text')
         key = ~> @getAttribute('key')
@@ -39,135 +33,38 @@ export class Select2
         fixed = ~> @getAttribute('fixed')
 
 
-        # localization
-
-        # initialization
-        @internalChange = false
-
-        @.$element = $(@input)
-
-        @.$element.select2(
-            #allowClear: true   # makes only sense with a placeholder!
-            width: "auto" #"resolve"    #element/style/function()
-            #language: @getAttribute('i18n')
-            #maximumSelectionLength: 2
-            #minimumResultsForSearch: Infinity    # never show search box
-            multiple: !@getAttribute('single')
-            #closeOnSelect: !!@getAttribute('single')  # ? maybe?
-            tags: !@getAttribute('fixed')
-        )
-
-
-
-        # update model when select2 changes
-        @.$element.on("change", (e) ~>
-            return if @internalChange
-
-            # TODO: not needed anymore
-            @internalChange = true
-
-            try
-                data = @.$element.val() # if this is an array of value attributes (= ids) of the option tag
-                if (data && data.length > 0)
-                    if key!
-                        # look object ids up in @items, which is an array of objects
-                        data = _.filter @getAttribute('items'), (object) ->
-                            _.includes data, object[key()]
-
-                    if single!
-                        # turn the array into an element
-                        data = data[0]
-
-                    model.set('value', data)
-                else
-                    model.set('value', null)
-
-            finally
-                @internalChange = false
-        )
 
 
     /*
-        value is the key() attr
+        return an object of ids
+        derby templates use "in" to check if an object has a property
         TODO write unit tests for each if
     */
-    selected: (id) ->
-        key = ~> @getAttribute('key')
+    selected:
+        get: (selection, current) ->
+            console.log("get called: ", selection, current)
+            key = ~> @getAttribute('key')
 
-        selected = @getAttribute('value')
+            # nothing selected yet
+            return false if selection == undefined
 
-        # nothing selected yet
-        if (selected === undefined)
-            return false;
+            if selection.length
+                x = _.find(selection, (object) ->
+                    if (key())
+                        return object[key()] == current
+                    else
+                        return object == current
+                )
+                console.log "x", x
+                return x != undefined
+            else if key!
+                return selection[key()] == current
+            else
+                return selection == current
 
-        if (selected.length)
-            # TODO: use for ... of for array
-            return _.find(selected, (object) ->
-                if (key())
-                    return object[key()] == id
-                else
-                    return object == id
-            ) != undefined
-
-        if (key())
-            return selected[key()] == id
-
-        return selected == id
-
-
-/* If needed, a custom data adapter has to be written instead of the old setValue() stuff!
-
-$.fn.select2.amd.require(
-['select2/data/array', 'select2/utils'],
-function (ArrayData, Utils) {
-  function CustomData ($element, options) {
-    CustomData.__super__.constructor.call(this, $element, options);
-  }
-
-  Utils.Extend(CustomData, ArrayData);
-
-  # Get the currently selected options. This is called when trying to get the
-  # initial selection for Select2, as well as when Select2 needs to determine
-  # what options within the results are selected.
-  #
-  # @param callback A function that should be called when the current selection
-  #   has been retrieved. The first parameter to the function should be an array
-  #   of data objects.
-  CustomData.prototype.current = function (callback) {
-    var data = [];
-    var currentVal = this.$element.val();
-
-    if (!this.$element.prop('multiple')) {
-      currentVal = [currentVal];
-    }
-
-    for (var v = 0; v < currentVal.length; v++) {
-      data.push({
-        id: currentVal[v],
-        text: currentVal[v]
-      });
-    }
-
-    callback(data);
-  };
-
-  # Get a set of options that are filtered based on the parameters that have
-  # been passed on in.
-  #
-  # @param params An object containing any number of parameters that the query
-  #   could be affected by. Only the core parameters will be documented.
-  # @param params.term A user-supplied term. This is typically the value of the
-  #   search box, if one exists, but can also be an empty string or null value.
-  # @param params.page The specific page that should be loaded. This is typically
-  #   provided when working with remote data sets, which rely on pagination to
-  #   determine what objects should be displayed.
-  # @param callback The function that should be called with the queried results.
-  DataAdapter.query = function (params, callback) {
-    callback(queryiedData);
-  }
-
-  $("#select").select2({
-    dataAdapter: CustomData
-  });
-}
-*/
+        # inputValue: true/false -> the new selection state
+        # selection: the previous selection model values of the select2 component -> to be updated
+        # id: the id of the option now to be added or removed from selection (depending on inputValue)
+        set: (inputValue, selection, id) ->
+            alert("not implemented!")
+            [selection, id]
