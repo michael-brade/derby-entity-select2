@@ -36,8 +36,8 @@ export class Select2
         /*  SelectAdapter: find child elements with :select attribute set
             ArrayAdapter: data from an array, create option elements and work with those
         */
-        $.fn.select2.amd.require(['select2/data/base', 'select2/utils'],
-            (BaseAdapter, Utils) !~>
+        $.fn.select2.amd.require(['select2/data/base', 'select2/results', 'select2/utils'],
+            (BaseAdapter, Results, Utils) !~>
                 !function ModelData ($element, options)
                     @$element = $element;
                     @options = options;
@@ -82,9 +82,11 @@ export class Select2
                     #    currentVal = [currentVal]
 
                     if currentVal
-                        for let v in currentVal
+                        for let v, pos in currentVal
+                            # id is the position to be able to deselect the correct one again
+                            # unselect gets this data (from current()), select gets the data from query() with the true id
                             data.push(
-                                id: v[@options.get('key')!]
+                                id: pos
                                 text: v[@options.get('text')!]
                             )
 
@@ -116,9 +118,7 @@ export class Select2
 
                     return if !@$element.prop('multiple')
 
-                    @model.remove(@options.get('value'), _.findIndex @model.get(@options.get('value')), (item) ~>
-                        item[@options.get('key')!] == data.id
-                    )
+                    @model.remove @options.get('value'), data.id
 
 
                 # Get a set of options that are filtered based on the parameters that have
@@ -151,9 +151,20 @@ export class Select2
                     callback results: data
 
 
+                !function MultiselectResults ($element, options, dataAdapter)
+                    MultiselectResults.__super__.constructor.call(this, $element, options, dataAdapter);
 
-                # TODO:
-                #  - also overwrite Results::setClasses (don't do it! we want double selections)
+                Utils.Extend(MultiselectResults, Results)
+
+
+                MultiselectResults.prototype.render = ->
+                    @$results = $('<ul class="select2-results__options" role="tree"></ul>')
+                    return @$results;
+
+                MultiselectResults.prototype.setClasses = ->
+                    # don't set any selected classes to be able to re-select items
+
+
 
                 @.$element.select2(
                     #allowClear: true   # makes only sense with a placeholder!
@@ -178,6 +189,7 @@ export class Select2
                     obj: ~> @getAttribute('obj')
 
                     dataAdapter: ModelData  # TODO: write another Adapter for key() or obj() false!?
+                    resultsAdapter: MultiselectResults
                 )
 
         )
