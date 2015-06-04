@@ -50,15 +50,10 @@ export class Select2
 
 
                 ModelData.prototype.bind = (container, $container) ->
-                    console.log("data adapter::bind", arguments)
-
                     @container = container;
 
-                    container.on 'select', (params) ~>
-                        @select(params.data)
-
-                    container.on 'unselect', (params) ~>
-                        @unselect(params.data)
+                    container.on 'select',   (params) ~> @select(params.data)
+                    container.on 'unselect', (params) ~> @unselect(params.data)
 
 
                 ModelData.prototype.destroy = ->
@@ -72,8 +67,6 @@ export class Select2
                 #   has been retrieved. The first parameter to the function should be an array
                 #   of data objects.
                 ModelData.prototype.current = (callback) ->
-                    console.log("data adapter::current", arguments)
-
                     data = []
                     # TODO: could use model.at() as a shortcut, maybe even in options already
                     currentVal = @model.get(@options.get('value'))
@@ -95,8 +88,6 @@ export class Select2
                 # add and remove an item to or from selections
                 #    data is the object with id and text
                 ModelData.prototype.select = (data) ->
-                    console.log("data adapter::select", data)
-
                     if @$element.prop('multiple')
                         # TODO: make it a function: id -> object
                         @model.push(@options.get('value'), _.find @options.get('data')!, (item) ~>
@@ -114,8 +105,6 @@ export class Select2
 
 
                 ModelData.prototype.unselect = (data) ->
-                    console.log("data adapter::unselect", data)
-
                     return if !@$element.prop('multiple')
 
                     @model.remove @options.get('value'), data.id
@@ -133,7 +122,6 @@ export class Select2
                 #   determine what objects should be displayed.
                 # @param callback The function that should be called with the queried results.
                 ModelData.prototype.query = (params, callback) ->
-                    console.log("data adapter::query", arguments)
                     data = []
                     currentVal = @options.get('data')!
 
@@ -193,25 +181,6 @@ export class Select2
                 )
 
         )
-
-
-        # update model when select2 changes
-        #@.$element.on "change", (e) ~>
-        #    return if @internalChange
-        #    @internalChange = true
-        #    try
-        #        model.set "value", @getValue!
-        #    finally
-        #        @internalChange = false
-
-
-        # update select2 when model changes
-        #model.on "change", "value", (newVal, oldVal, passed) ~>
-        #    @setValue newVal
-
-
-        # set initial value
-        #@setValue model.get('value')
 
 
     # get value from select2
