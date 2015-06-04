@@ -36,8 +36,8 @@ export class Select2
         /*  SelectAdapter: find child elements with :select attribute set
             ArrayAdapter: data from an array, create option elements and work with those
         */
-        $.fn.select2.amd.require(['select2/data/base', 'select2/results', 'select2/utils'],
-            (BaseAdapter, Results, Utils) !~>
+        $.fn.select2.amd.require(['select2/data/base', 'select2/results', 'select2/selection/multiple', 'select2/utils'],
+            (BaseAdapter, Results, MultipleSelection, Utils) !~>
                 !function ModelData ($element, options)
                     @$element = $element;
                     @options = options;
@@ -139,6 +139,9 @@ export class Select2
                     callback results: data
 
 
+                /**
+                 *  MultiselectResults: allow clicking and choosing an already selected item again
+                 */
                 !function MultiselectResults ($element, options, dataAdapter)
                     MultiselectResults.__super__.constructor.call(this, $element, options, dataAdapter);
 
@@ -151,6 +154,26 @@ export class Select2
 
                 MultiselectResults.prototype.setClasses = ->
                     # don't set any selected classes to be able to re-select items
+
+
+                /**
+                 *  MultipleReorderSelection: allow reodering a selection via drag&drop
+                 */
+                !function MultipleReorderSelection ($element, options)
+                    require 'jquery.sortable'
+
+                    MultipleReorderSelection.__super__.constructor.call(this, $element, options);
+
+                Utils.Extend(MultipleReorderSelection, MultipleSelection)
+
+
+                MultipleReorderSelection.prototype.update = (data) ->
+                    MultipleReorderSelection.__super__.update.apply(this, arguments);
+                    $selection = @$selection.find('.select2-selection__rendered');
+                    $selection.sortable(
+                        animation: 200
+                    )
+
 
 
 
@@ -177,6 +200,7 @@ export class Select2
                     obj: ~> @getAttribute('obj')
 
                     dataAdapter: ModelData  # TODO: write another Adapter for key() or obj() false!?
+                    selectionAdapter: MultipleReorderSelection
                     resultsAdapter: MultiselectResults
                 )
 
