@@ -33,9 +33,8 @@ export class Select2
         @.$element = $(@input)
 
 
-        /* If needed, a custom data adapter has to be written instead of the old setValue() stuff!
-            SelectAdapter: find child elements with :select attribute set
-            ArrayAdapter: data from an array
+        /*  SelectAdapter: find child elements with :select attribute set
+            ArrayAdapter: data from an array, create option elements and work with those
         */
         $.fn.select2.amd.require(['select2/data/base', 'select2/utils'],
             (BaseAdapter, Utils) !~>
@@ -43,9 +42,9 @@ export class Select2
                     @$element = $element;
                     @options = options;
                     @model = @options.get('model')
+                    @model.on 'all', @options.get('value'), !~> @$element.trigger('change') # TODO model.at shortcut possible
 
                     ModelData.__super__.constructor.call(this);
-                    #ModelData.__super__.constructor.call(this, $element, options)
 
                 Utils.Extend(ModelData, BaseAdapter)
 
@@ -111,9 +110,6 @@ export class Select2
 
                         #@$element.val data.id
 
-                    # TODO: trigger change on model.on('all', ...)??
-                    @$element.trigger('change')
-
 
                 ModelData.prototype.unselect = (data) ->
                     console.log("data adapter::unselect", data)
@@ -123,8 +119,6 @@ export class Select2
                     @model.remove(@options.get('value'), _.findIndex @model.get(@options.get('value')), (item) ~>
                         item[@options.get('key')!] == data.id
                     )
-
-                    @$element.trigger('change')
 
 
                 # Get a set of options that are filtered based on the parameters that have
@@ -174,6 +168,9 @@ export class Select2
                     model: @model
                     value: 'value' # model path to current selection
 
+                    order: true         # means selection oder is important and reodering is possible
+                    duplicates: true    # duplicate selections possible
+
                     data: ~> @getAttribute('items')  # function that returns the data (all items)
 
                     key: ~> @getAttribute('key')
@@ -184,14 +181,6 @@ export class Select2
                 )
 
         )
-
-
-
-        # localization
-
-        # initialization
-        @internalChange = false
-
 
 
         # update model when select2 changes
