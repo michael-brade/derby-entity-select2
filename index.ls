@@ -25,6 +25,198 @@ export class Select2
 
     create: (model, dom) !->
 
+        require 'select2'
+
+        if (typeof jQuery.fn.select2 == 'undefined')
+            return console.log 'select2.js is required to run select2'
+
+        @.$element = $(@input)
+
+
+        /* If needed, a custom data adapter has to be written instead of the old setValue() stuff!
+            SelectAdapter: find child elements with :select attribute set
+            ArrayAdapter: data from an array
+        */
+        $.fn.select2.amd.require(['select2/data/base', 'select2/utils'],
+            (BaseAdapter, Utils) !~>
+                !function ModelData ($element, options)
+                    @$element = $element;
+                    @options = options;
+                    @model = @options.get('model')
+
+                    ModelData.__super__.constructor.call(this);
+                    #ModelData.__super__.constructor.call(this, $element, options)
+
+                Utils.Extend(ModelData, BaseAdapter)
+
+
+                ModelData.prototype.bind = (container, $container) ->
+                    console.log("data adapter::bind", arguments)
+
+                    @container = container;
+
+                    container.on 'select', (params) ~>
+                        @select(params.data)
+
+                    container.on 'unselect', (params) ~>
+                        @unselect(params.data)
+
+
+                ModelData.prototype.destroy = ->
+
+
+                # Get the currently selected options. This is called when trying to get the
+                # initial selection for Select2, as well as when Select2 needs to determine
+                # what options within the results are selected.
+                #
+                # @param callback A function that should be called when the current selection
+                #   has been retrieved. The first parameter to the function should be an array
+                #   of data objects.
+                ModelData.prototype.current = (callback) ->
+                    console.log("data adapter::current", arguments)
+
+                    data = []
+                    # TODO: could use model.at() as a shortcut, maybe even in options already
+                    currentVal = @model.get(@options.get('value'))
+
+                    #if !@$element.prop('multiple')  # TODO: use @options?
+                    #    currentVal = [currentVal]
+
+                    if currentVal
+                        for let v in currentVal
+                            data.push(
+                                id: v[@options.get('key')!]
+                                text: v[@options.get('text')!]
+                            )
+
+                    callback(data)
+
+                # add and remove an item to or from selections
+                #    data is the object with id and text
+                ModelData.prototype.select = (data) ->
+                    console.log("data adapter::select", data)
+
+                    if @$element.prop('multiple')
+                        # TODO: make it a function: id -> object
+                        @model.push(@options.get('value'), _.find @options.get('data')!, (item) ~>
+                            item[@options.get('key')!] == data.id
+                        )
+
+                        #@$element.val(val)
+
+                    else
+                        @model.set(@options.get('value'), _.find @options.get('data')!, (item) ~>
+                            item[@options.get('key')!] == data.id
+                        )
+
+                        #@$element.val data.id
+
+                    # TODO: trigger change on model.on('all', ...)??
+                    @$element.trigger('change')
+
+
+                ModelData.prototype.unselect = (data) ->
+                    console.log("data adapter::unselect", data)
+
+                    return if !@$element.prop('multiple')
+
+                    @model.remove(@options.get('value'), _.findIndex @model.get(@options.get('value')), (item) ~>
+                        item[@options.get('key')!] == data.id
+                    )
+
+                    @$element.trigger('change')
+
+
+                # Get a set of options that are filtered based on the parameters that have
+                # been passed on in.
+                #
+                # @param params An object containing any number of parameters that the query
+                #   could be affected by. Only the core parameters will be documented.
+                # @param params.term A user-supplied term. This is typically the value of the
+                #   search box, if one exists, but can also be an empty string or null value.
+                # @param params.page The specific page that should be loaded. This is typically
+                #   provided when working with remote data sets, which rely on pagination to
+                #   determine what objects should be displayed.
+                # @param callback The function that should be called with the queried results.
+                ModelData.prototype.query = (params, callback) ->
+                    console.log("data adapter::query", arguments)
+                    data = []
+                    currentVal = @options.get('data')!
+
+                    for let v in currentVal
+                        matcher = @options.get('matcher')
+
+                        # TODO: re-use function _normalizeItem
+                        item =
+                            id: v[@options.get('key')!]
+                            text: v[@options.get('text')!]
+
+                        if matcher(params, item)
+                            data.push item
+
+                    callback results: data
+
+
+
+                # TODO:
+                #  - also overwrite Results::setClasses (don't do it! we want double selections)
+
+                @.$element.select2(
+                    #allowClear: true   # makes only sense with a placeholder!
+                    width: "auto" #"resolve"    #element/style/function()
+                    #language: @getAttribute('i18n')
+                    #maximumSelectionLength: 2
+                    #minimumResultsForSearch: Infinity    # never show search box
+                    multiple: !@getAttribute('single')
+                    #closeOnSelect: !!@getAttribute('single')  # ? maybe?
+                    tags: !@getAttribute('fixed')
+
+                    model: @model
+                    value: 'value' # model path to current selection
+
+                    data: ~> @getAttribute('items')  # function that returns the data (all items)
+
+                    key: ~> @getAttribute('key')
+                    text: ~> @getAttribute('text')
+                    obj: ~> @getAttribute('obj')
+
+                    dataAdapter: ModelData  # TODO: write another Adapter for key() or obj() false!?
+                )
+
+        )
+
+
+
+        # localization
+
+        # initialization
+        @internalChange = false
+
+
+
+        # update model when select2 changes
+        #@.$element.on "change", (e) ~>
+        #    return if @internalChange
+        #    @internalChange = true
+        #    try
+        #        model.set "value", @getValue!
+        #    finally
+        #        @internalChange = false
+
+
+        # update select2 when model changes
+        #model.on "change", "value", (newVal, oldVal, passed) ~>
+        #    @setValue newVal
+
+
+        # set initial value
+        #@setValue model.get('value')
+
+
+    # get value from select2
+    getValue: ->
+        console.log("getValue", @internalChange)
+
         # functions to see possible changes
         text = ~> @getAttribute('text')
         key = ~> @getAttribute('key')
@@ -32,39 +224,61 @@ export class Select2
         single = ~> @getAttribute('single')
         fixed = ~> @getAttribute('fixed')
 
+        data = @.$element.val() # this is an array of value attributes (= ids) of the option tag
+        if (data && data.length > 0)
+            if key!
+                # look object ids up in @items, which is an array of objects
+                data = _.filter @getAttribute('items'), (object) ->
+                    _.includes data, object[key!]
+
+            if single!
+                # turn the array into an element
+                data = data[0]
+
+            return data
+        else
+            return null
 
 
 
-    /*
-        return an object of ids
-        derby templates use "in" to check if an object has a property
-        TODO write unit tests for each if
-    */
-    selected:
-        get: (selection, current) ->
-            console.log("get called: ", selection, current)
-            key = ~> @getAttribute('key')
+    # set select2 to given value (either string, object, or array)
+    setValue: (value) ->
+        console.log("setValue", @internalChange)
+        return if @internalChange
 
-            # nothing selected yet
-            return false if selection == undefined
+        # functions to see possible changes
+        text = ~> @getAttribute('text')
+        key = ~> @getAttribute('key')
+        obj = ~> @getAttribute('obj')
+        single = ~> @getAttribute('single')
+        fixed = ~> @getAttribute('fixed')
 
-            if selection.length
-                x = _.find(selection, (object) ->
-                    if (key())
-                        return object[key()] == current
-                    else
-                        return object == current
-                )
-                console.log "x", x
-                return x != undefined
-            else if key!
-                return selection[key()] == current
+        if obj!
+            if single!
+                # turn the element into an array
+                data = [
+                    id: value[key!]
+                    text: value[text!]
+                ]
             else
-                return selection == current
+                data = _.map(value, (item) ->
+                    id: item[key!]
+                    text: item[text!]
+                )
+        else if single!
+            data = [
+                id: value
+                text: value
+            ]
+        else
+            data = _.map(value, (item) ->
+                    id: item
+                    text: item
+            )
 
-        # inputValue: true/false -> the new selection state
-        # selection: the previous selection model values of the select2 component -> to be updated
-        # id: the id of the option now to be added or removed from selection (depending on inputValue)
-        set: (inputValue, selection, id) ->
-            alert("not implemented!")
-            [selection, id]
+
+        @internalChange = true
+
+        @.$element.val(data)
+
+        @internalChange = false

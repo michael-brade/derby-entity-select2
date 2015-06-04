@@ -6,16 +6,4 @@
     value: selected items
 -->
 <index: element='d-select2'>
-
-    {{with @text as #text}}
-        <select as="input" id="{{@id}}" class="form-control" multiple="{{!@single}}">
-            {{each @items as #option}}
-                <!-- selected is a getter and setter that reads and writes value  -->
-                <option value="{{#option[@key]}}" selected="{{selected(value, #option[@key])}}">
-                    {{#option[#text]}}
-                </option>
-            {{/}}
-        </select>
-    {{/}}
-
-<!--  {{@content}}-->
+    <div as="input" id="{{@id}}" class="{{@class}}" multiple="{{!@single}}"></div>
