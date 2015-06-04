@@ -166,6 +166,23 @@ export class Select2
 
                 Utils.Extend(MultipleReorderSelection, MultipleSelection)
 
+                # override bind and prevent a click on "remove (x)" to open the dropdown
+                MultipleReorderSelection.prototype.bind = (container, $container) !->
+                    MultipleReorderSelection.__super__.bind.apply(this, arguments);
+
+                    @$selection.off 'click'
+
+                    @$selection.on 'click', (evt) !~>
+                        $selection = $(evt.target).parent!
+                        data = $selection.data('data')
+
+                        if $(evt.target).hasClass('select2-selection__choice__remove')
+                            @trigger 'unselect',
+                                originalEvent: evt,
+                                data: data
+                        else
+                            @trigger 'toggle', originalEvent: evt
+
 
                 MultipleReorderSelection.prototype.update = (data) ->
                     MultipleReorderSelection.__super__.update.apply(this, arguments);
@@ -192,6 +209,7 @@ export class Select2
 
                     order: true         # means selection oder is important and reodering is possible
                     duplicates: true    # duplicate selections possible
+                    closeOnSelect: false
 
                     data: ~> @getAttribute('items')  # function that returns the data (all items)
 
