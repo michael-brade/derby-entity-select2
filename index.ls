@@ -76,12 +76,11 @@ export class Select2
 
                     if currentVal
                         for let v, pos in currentVal
+                            item = @_normalizeItem v
                             # id is the position to be able to deselect the correct one again
                             # unselect gets this data (from current()), select gets the data from query() with the true id
-                            data.push(
-                                id: pos
-                                text: v[@options.get('text')!]
-                            )
+                            item.id = pos
+                            data.push item
 
                     callback(data)
 
@@ -91,17 +90,12 @@ export class Select2
                     if @$element.prop('multiple')
                         # TODO: make it a function: id -> object
                         @model.push(@options.get('value'), _.find @options.get('data')!, (item) ~>
-                            item[@options.get('key')!] == data.id
+                            _.get(item, @options.get('key')!) == data.id
                         )
-
-                        #@$element.val(val)
-
                     else
                         @model.set(@options.get('value'), _.find @options.get('data')!, (item) ~>
-                            item[@options.get('key')!] == data.id
+                            _.get(item, @options.get('key')!) == data.id
                         )
-
-                        #@$element.val data.id
 
 
                 ModelData.prototype.unselect = (data) ->
@@ -123,20 +117,35 @@ export class Select2
                 # @param callback The function that should be called with the queried results.
                 ModelData.prototype.query = (params, callback) ->
                     data = []
-                    currentVal = @options.get('data')!
 
-                    for let v in currentVal
+                    for let v in @options.get('data')!
                         matcher = @options.get('matcher')
 
-                        # TODO: re-use function _normalizeItem
-                        item =
-                            id: v[@options.get('key')!]
-                            text: v[@options.get('text')!]
+                        item = @_normalizeItem v
 
                         if matcher(params, item)
                             data.push item
 
                     callback results: data
+
+
+                ModelData.prototype._normalizeItem = (item) ->
+                    id = _.get item, @options.get('key')!
+
+                    # TODO: item.name should be encoded in attribute
+                    text = if typeof! item.name == 'Array' then
+                        # TODO: if we are using references, v is an array of ids, and this will have to use a map of ids to the entities items
+                        _.reduce item.name, (result, subitem) ~>
+                            if result
+                                result += " "
+                            result += _.get subitem, @options.get('text')!
+                        , ""
+                    else
+                        _.get item, @options.get('text')!
+
+                    return
+                        id: id
+                        text: text
 
 
                 /**
@@ -269,13 +278,13 @@ export class Select2
             if single!
                 # turn the element into an array
                 data = [
-                    id: value[key!]
-                    text: value[text!]
+                    id: _.get value, key!
+                    text: _.get value, text!
                 ]
             else
                 data = _.map(value, (item) ->
-                    id: item[key!]
-                    text: item[text!]
+                    id: _.get item, key!
+                    text: _.get item, text!
                 )
         else if single!
             data = [
