@@ -198,6 +198,17 @@ export class Select2
                     $selection = @$selection.find('.select2-selection__rendered');
                     $selection.sortable(
                         animation: 200
+
+                        # dragging started
+                        onStart: (evt) ->
+
+                        # dragging ended,  evt.oldIndex, evt.newIndex
+                        onEnd: (evt) ->
+
+                        onUpdate: (evt) ~>
+                            return if evt.oldIndex == evt.newIndex
+
+                            @options.get('model').move(@options.get('value'), evt.oldIndex, evt.newIndex)
                     )
 
 
