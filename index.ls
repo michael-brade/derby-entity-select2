@@ -216,7 +216,7 @@ export class Select2
 
                 @.$element.select2(
                     #allowClear: true   # makes only sense with a placeholder!
-                    width: "auto" #"resolve"    #element/style/function()
+                    width: "100%" # auto/resolve/element/style/function()
                     #language: @getAttribute('i18n')
                     #maximumSelectionLength: 2
                     #minimumResultsForSearch: Infinity    # never show search box
