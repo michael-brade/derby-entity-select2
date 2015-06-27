@@ -36,8 +36,15 @@ export class Select2
         /*  SelectAdapter: find child elements with :select attribute set
             ArrayAdapter: data from an array, create option elements and work with those
         */
-        $.fn.select2.amd.require(['select2/data/base', 'select2/results', 'select2/selection/multiple', 'select2/utils'],
-            (BaseAdapter, Results, MultipleSelection, Utils) !~>
+        $.fn.select2.amd.require(
+            ['select2/data/base',
+             'select2/results',
+             'select2/selection/search', 'select2/selection/multiple', 'select2/selection/eventRelay',
+             'select2/utils'],
+            (BaseAdapter, Results,
+             SelectionSearch, MultipleSelection, EventRelay,
+             Utils) !~>
+
                 !function ModelData ($element, options)
                     @$element = $element;
                     @options = options;
@@ -212,7 +219,13 @@ export class Select2
                     )
 
 
+                ## select2 initialization
 
+                multiple =  !@getAttribute('single')
+
+                if (multiple)
+                    selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
+                    selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
 
                 @.$element.select2(
                     #allowClear: true   # makes only sense with a placeholder!
@@ -220,7 +233,7 @@ export class Select2
                     #language: @getAttribute('i18n')
                     #maximumSelectionLength: 2
                     #minimumResultsForSearch: Infinity    # never show search box
-                    multiple: !@getAttribute('single')
+                    multiple: multiple
                     #closeOnSelect: !!@getAttribute('single')  # ? maybe?
                     tags: !@getAttribute('fixed')
 
@@ -238,7 +251,7 @@ export class Select2
                     obj: ~> @getAttribute('obj')
 
                     dataAdapter: ModelData  # TODO: write another Adapter for key() or obj() false!?
-                    selectionAdapter: MultipleReorderSelection
+                    selectionAdapter: selectionAdapter
                     resultsAdapter: MultiselectResults
                 )
 
