@@ -45,11 +45,19 @@ export class Select2
              SelectionSearch, MultipleSelection, EventRelay,
              Utils) !~>
 
+                # The ModelData Adapter: get the data from a racer model. Handles selection/deselection,
+                #
+                # Options:
+                #  - model: the racer model
+                #  - value: model path to current selection
+                #  - data: function that returns the data (all possible items available for selection)
+                #  - key: function that returns the item path to the item id
+                #  - text: function that returns the item path to the display text
                 !function ModelData ($element, options)
                     @$element = $element;
                     @options = options;
-                    @model = @options.get('model')
-                    @model.on 'all', @options.get('value'), !~> @$element.trigger('change') # TODO model.at shortcut possible
+                    @value = @options.get('model').at(@options.get('value'))
+                    @value.on 'all', !~> @$element.trigger('change')
 
                     ModelData.__super__.constructor.call(this);
 
@@ -68,15 +76,14 @@ export class Select2
 
                 # Get the currently selected options. This is called when trying to get the
                 # initial selection for Select2, as well as when Select2 needs to determine
-                # what options within the results are selected.
+                # what options within the results (the dropdown) are selected.
                 #
                 # @param callback A function that should be called when the current selection
                 #   has been retrieved. The first parameter to the function should be an array
                 #   of data objects.
                 ModelData.prototype.current = (callback) ->
                     data = []
-                    # TODO: could use model.at() as a shortcut, maybe even in options already
-                    currentVal = @model.get(@options.get('value'))
+                    currentVal = @value.get!
 
                     #if !@$element.prop('multiple')  # TODO: use @options?
                     #    currentVal = [currentVal]
@@ -91,24 +98,27 @@ export class Select2
 
                     callback(data)
 
-                # add and remove an item to or from selections
+                # add an item to the selection
                 #    data is the object with id and text
                 ModelData.prototype.select = (data) ->
                     if @$element.prop('multiple')
-                        # TODO: make it a function: id -> object
-                        @model.push(@options.get('value'), _.find @options.get('data')!, (item) ~>
-                            _.get(item, @options.get('key')!) == data.id
-                        )
+                        @value.push @_getItem data.id
                     else
-                        @model.set(@options.get('value'), _.find @options.get('data')!, (item) ~>
-                            _.get(item, @options.get('key')!) == data.id
-                        )
+                        @value.set @_getItem data.id
 
 
+                # get the object with key == itemId
+                ModelData.prototype._getItem = (itemId) ->
+                    _.find @options.get('data')!, (item) ~>
+                        _.get(item, @options.get('key')!) == itemId
+
+
+                # remove an item from the selection
+                #    data is the object with id and text
                 ModelData.prototype.unselect = (data) ->
                     return if !@$element.prop('multiple')
 
-                    @model.remove @options.get('value'), data.id
+                    @value.remove data.id
 
 
                 # Get a set of options that are filtered based on the parameters that have
@@ -136,6 +146,11 @@ export class Select2
                     callback results: data
 
 
+                # Turn an item into an object of the form
+                # {
+                #     id: itemId,
+                #     text: textToDisplay
+                # }
                 ModelData.prototype._normalizeItem = (item) ->
                     id = _.get item, @options.get('key')!
 
@@ -143,8 +158,7 @@ export class Select2
                     text = if typeof! item.name == 'Array' then
                         # TODO: if we are using references, v is an array of ids, and this will have to use a map of ids to the entities items
                         _.reduce item.name, (result, subitem) ~>
-                            if result
-                                result += " "
+                            result += " " if result
                             result += _.get subitem, @options.get('text')!
                         , ""
                     else
@@ -248,6 +262,7 @@ export class Select2
 
                     key: ~> @getAttribute('key')
                     text: ~> @getAttribute('text')
+                    entityOfText: ~> @getAttribute('entityOfText')
                     obj: ~> @getAttribute('obj')
 
                     dataAdapter: ModelData  # TODO: write another Adapter for key() or obj() false!?
