@@ -50,7 +50,9 @@ export class Select2
                 # Options:
                 #  - model: the racer model
                 #  - value: model path to current selection
+                #  - ref: true if value contains only ids (references to other items instead of items itself)
                 #  - data: function that returns the data (all possible items available for selection)
+                #
                 #  - key: function that returns the item path to the item id
                 #  - text: function that returns the item path to the display text
                 !function ModelData ($element, options)
@@ -85,10 +87,10 @@ export class Select2
                     data = []
                     currentVal = @value.get!
 
-                    #if !@$element.prop('multiple')  # TODO: use @options?
-                    #    currentVal = [currentVal]
-
                     if currentVal
+                        if !@$element.prop('multiple')  # TODO: use @options?
+                            currentVal = [currentVal]   # we always want an array, even if it is only one item
+
                         for let v, pos in currentVal
                             item = @_normalizeItem v
                             # id is the position to be able to deselect the correct one again
@@ -99,12 +101,17 @@ export class Select2
                     callback(data)
 
                 # add an item to the selection
-                #    data is the object with id and text
+                #    data is the _normalize'd object with id and text
                 ModelData.prototype.select = (data) ->
                     if @$element.prop('multiple')
-                        @value.push @_getItem data.id
+                        fn = @value.push
                     else
-                        @value.set @_getItem data.id
+                        fn = @value.set
+
+                    if @options.get('ref')
+                        fn.call @value, data.id
+                    else
+                        fn.call @value, @_getItem data.id
 
 
                 # get the object with key == itemId
@@ -114,9 +121,9 @@ export class Select2
 
 
                 # remove an item from the selection
-                #    data is the object with id and text
+                #    data is the _normalize'd object with id and text
                 ModelData.prototype.unselect = (data) ->
-                    return if !@$element.prop('multiple')
+                    return if not @$element.prop('multiple')
 
                     @value.remove data.id
 
@@ -135,10 +142,10 @@ export class Select2
                 ModelData.prototype.query = (params, callback) ->
                     data = []
 
-                    for let v in @options.get('data')!
+                    for let i in @options.get('data')!
                         matcher = @options.get('matcher')
 
-                        item = @_normalizeItem v
+                        item = @_normalizeItem i
 
                         if matcher(params, item)
                             data.push item
@@ -152,7 +159,20 @@ export class Select2
                 #     text: textToDisplay
                 # }
                 ModelData.prototype._normalizeItem = (item) ->
+                    # console.log 'normalize: ', typeof item, item
+
+                    # select2 is always used for an attribute of an entity. That attribute can be set to "reference == true",
+                    # which means that only item ids will be stored. But data will still contain the objects with those ids.
+
+                    if typeof item == 'string'  # TODO: or: if entity.attribute.<this>.reference == true
+                        # item is in fact the itemId
+                        item = @_getItem item
+
                     id = _.get item, @options.get('key')!
+
+                    # TODO: this will be needed when using references, it should contain all entity items of the referenced type
+                    #if @options.get('entityOfText')!
+                    #    items = @options.get('entityOfText')!   # rename to textEntityItems
 
                     # TODO: item.name should be encoded in attribute
                     text = if typeof! item.name == 'Array' then
@@ -251,19 +271,23 @@ export class Select2
                     #closeOnSelect: !!@getAttribute('single')  # ? maybe?
                     tags: !@getAttribute('fixed')
 
-                    model: @model
-                    value: 'value' # model path to current selection
-
                     order: true         # means selection oder is important and reodering is possible
                     duplicates: true    # duplicate selections possible
                     closeOnSelect: false
+
+                    # Model Data Adapter options
+                    model: @model
+                    value: 'value' # model path to current selection
 
                     data: ~> @getAttribute('items')  # function that returns the data (all items)
 
                     key: ~> @getAttribute('key')
                     text: ~> @getAttribute('text')
-                    entityOfText: ~> @getAttribute('entityOfText')
                     obj: ~> @getAttribute('obj')
+                    ref: ~> @getAttribute('ref')
+
+                    entityOfText: ~> @getAttribute('entityOfText')
+
 
                     dataAdapter: ModelData  # TODO: write another Adapter for key() or obj() false!?
                     selectionAdapter: selectionAdapter
