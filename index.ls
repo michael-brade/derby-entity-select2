@@ -6,6 +6,7 @@
 _ = require 'lodash'  # use prelude.ls ?
 
 
+
 export class Select2
 
     view: __dirname
@@ -45,35 +46,38 @@ export class Select2
              SelectionSearch, MultipleSelection, EventRelay,
              Utils) !~>
 
-                # The ModelData Adapter: get the data from a racer model. Handles selection/deselection,
+                # The EntityData Adapter: get the data from a racer model. Handles selection/deselection, etc.
                 #
                 # Options:
                 #  - model: the racer model
                 #  - value: model path to current selection
-                #  - ref: true if value contains only ids (references to other items instead of items itself)
-                #  - data: function that returns the data (all possible items available for selection)
-                #
-                #  - key: function that returns the item path to the item id
-                #  - text: function that returns the item path to the display text
-                !function ModelData ($element, options)
+
+                #  - entities: the entities class instance
+                #  - attribute: select2 is always used for an attribute of an entity, this contains all the information,
+                #       like if value has references, which entity type, etc.
+                !function EntityData ($element, options)
                     @$element = $element;
                     @options = options;
+
+                    @entities = @options.get('entities')
+                    @attribute = @options.get('attribute')
+
                     @value = @options.get('model').at(@options.get('value'))
-                    @value.on 'all', !~> @$element.trigger('change')
+                    @value.on 'all', !~> @$element.trigger('change')    # TODO: how to also trigger if references change?
 
-                    ModelData.__super__.constructor.call(this);
+                    EntityData.__super__.constructor.call(this);
 
-                Utils.Extend(ModelData, BaseAdapter)
+                Utils.Extend(EntityData, BaseAdapter)
 
 
-                ModelData.prototype.bind = (container, $container) ->
+                EntityData.prototype.bind = (container, $container) ->
                     @container = container;
 
                     container.on 'select',   (params) ~> @select(params.data)
                     container.on 'unselect', (params) ~> @unselect(params.data)
 
 
-                ModelData.prototype.destroy = ->
+                EntityData.prototype.destroy = ->
 
 
                 # Get the currently selected options. This is called when trying to get the
@@ -83,15 +87,18 @@ export class Select2
                 # @param callback A function that should be called when the current selection
                 #   has been retrieved. The first parameter to the function should be an array
                 #   of data objects.
-                ModelData.prototype.current = (callback) ->
+                EntityData.prototype.current = (callback) ->
                     data = []
                     currentVal = @value.get!
 
                     if currentVal
-                        if !@$element.prop('multiple')  # TODO: use @options?
+                        if !@options.get('multiple')
                             currentVal = [currentVal]   # we always want an array, even if it is only one item
 
                         for let v, pos in currentVal
+                            if @attribute.reference
+                                v = @entities.getItem v, @attribute.entity
+
                             item = @_normalizeItem v
                             # id is the position to be able to deselect the correct one again
                             # unselect gets this data (from current()), select gets the data from query() with the true id
@@ -102,28 +109,22 @@ export class Select2
 
                 # add an item to the selection
                 #    data is the _normalize'd object with id and text
-                ModelData.prototype.select = (data) ->
-                    if @$element.prop('multiple')
+                EntityData.prototype.select = (data) ->
+                    if @options.get('multiple')
                         fn = @value.push
                     else
                         fn = @value.set
 
-                    if @options.get('ref')
+                    if @attribute.reference
                         fn.call @value, data.id
                     else
-                        fn.call @value, @_getItem data.id
-
-
-                # get the object with key == itemId
-                ModelData.prototype._getItem = (itemId) ->
-                    _.find @options.get('data')!, (item) ~>
-                        _.get(item, @options.get('key')!) == itemId
+                        fn.call @value, @entities.getItem data.id, @attribute.entity
 
 
                 # remove an item from the selection
                 #    data is the _normalize'd object with id and text
-                ModelData.prototype.unselect = (data) ->
-                    return if not @$element.prop('multiple')
+                EntityData.prototype.unselect = (data) ->
+                    return if not @options.get('multiple')
 
                     @value.remove data.id
 
@@ -139,10 +140,10 @@ export class Select2
                 #   provided when working with remote data sets, which rely on pagination to
                 #   determine what objects should be displayed.
                 # @param callback The function that should be called with the queried results.
-                ModelData.prototype.query = (params, callback) ->
+                EntityData.prototype.query = (params, callback) ->
                     data = []
 
-                    for let i in @options.get('data')!
+                    for let i in @entities.getItems(@attribute.entity)
                         matcher = @options.get('matcher')
 
                         item = @_normalizeItem i
@@ -158,35 +159,10 @@ export class Select2
                 #     id: itemId,
                 #     text: textToDisplay
                 # }
-                ModelData.prototype._normalizeItem = (item) ->
-                    # console.log 'normalize: ', typeof item, item
-
-                    # select2 is always used for an attribute of an entity. That attribute can be set to "reference == true",
-                    # which means that only item ids will be stored. But data will still contain the objects with those ids.
-
-                    if typeof item == 'string'  # TODO: or: if entity.attribute.<this>.reference == true
-                        # item is in fact the itemId
-                        item = @_getItem item
-
-                    id = _.get item, @options.get('key')!
-
-                    # TODO: this will be needed when using references, it should contain all entity items of the referenced type
-                    #if @options.get('entityOfText')!
-                    #    items = @options.get('entityOfText')!   # rename to textEntityItems
-
-                    # TODO: item.name should be encoded in attribute
-                    text = if typeof! item.name == 'Array' then
-                        # TODO: if we are using references, v is an array of ids, and this will have to use a map of ids to the entities items
-                        _.reduce item.name, (result, subitem) ~>
-                            result += " " if result
-                            result += _.get subitem, @options.get('text')!
-                        , ""
-                    else
-                        _.get item, @options.get('text')!
-
+                EntityData.prototype._normalizeItem = (item) ->
                     return
-                        id: id
-                        text: text
+                        id: item.id
+                        text: @entities.getItemAttr(item, 'name', @attribute.entity, @options.get 'locale')
 
 
                 /**
@@ -257,9 +233,11 @@ export class Select2
 
                 multiple =  !@getAttribute('single')
 
-                if (multiple)
-                    selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
-                    selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
+                selectionAdapter = MultipleReorderSelection
+
+                # if (multiple)
+                #     selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
+                #     selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
 
                 @.$element.select2(
                     #allowClear: true   # makes only sense with a placeholder!
@@ -275,94 +253,17 @@ export class Select2
                     duplicates: true    # duplicate selections possible
                     closeOnSelect: false
 
-                    # Model Data Adapter options
+                    # EntityData Adapter options
                     model: @model
-                    value: 'value' # model path to current selection
+                    value: 'value'                          # model path to current selection
 
-                    data: ~> @getAttribute('items')  # function that returns the data (all items)
+                    entities: @getAttribute('entities')     # the Entities instance
+                    attribute: @getAttribute('attribute')   # the attribute definition this select2 is used for
+                    locale: @getAttribute('locale')
 
-                    key: ~> @getAttribute('key')
-                    text: ~> @getAttribute('text')
-                    obj: ~> @getAttribute('obj')
-                    ref: ~> @getAttribute('ref')
-
-                    entityOfText: ~> @getAttribute('entityOfText')
-
-
-                    dataAdapter: ModelData  # TODO: write another Adapter for key() or obj() false!?
+                    dataAdapter: EntityData                 # TODO: write another Adapter for key() or obj() false!?
                     selectionAdapter: selectionAdapter
                     resultsAdapter: MultiselectResults
                 )
 
         )
-
-
-    # get value from select2
-    getValue: ->
-        console.log("getValue", @internalChange)
-
-        # functions to see possible changes
-        text = ~> @getAttribute('text')
-        key = ~> @getAttribute('key')
-        obj = ~> @getAttribute('obj')
-        single = ~> @getAttribute('single')
-        fixed = ~> @getAttribute('fixed')
-
-        data = @.$element.val() # this is an array of value attributes (= ids) of the option tag
-        if (data && data.length > 0)
-            if key!
-                # look object ids up in @items, which is an array of objects
-                data = _.filter @getAttribute('items'), (object) ->
-                    _.includes data, object[key!]
-
-            if single!
-                # turn the array into an element
-                data = data[0]
-
-            return data
-        else
-            return null
-
-
-
-    # set select2 to given value (either string, object, or array)
-    setValue: (value) ->
-        console.log("setValue", @internalChange)
-        return if @internalChange
-
-        # functions to see possible changes
-        text = ~> @getAttribute('text')
-        key = ~> @getAttribute('key')
-        obj = ~> @getAttribute('obj')
-        single = ~> @getAttribute('single')
-        fixed = ~> @getAttribute('fixed')
-
-        if obj!
-            if single!
-                # turn the element into an array
-                data = [
-                    id: _.get value, key!
-                    text: _.get value, text!
-                ]
-            else
-                data = _.map(value, (item) ->
-                    id: _.get item, key!
-                    text: _.get item, text!
-                )
-        else if single!
-            data = [
-                id: value
-                text: value
-            ]
-        else
-            data = _.map(value, (item) ->
-                    id: item
-                    text: item
-            )
-
-
-        @internalChange = true
-
-        @.$element.val(data)
-
-        @internalChange = false
