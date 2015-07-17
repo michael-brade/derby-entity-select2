@@ -235,8 +235,8 @@ export class Select2
 
                 selectionAdapter = MultipleReorderSelection
 
-                # if (multiple)
-                #     selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
+                if (multiple)
+                    selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
                 #     selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
 
                 @.$element.select2(
