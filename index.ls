@@ -161,7 +161,7 @@ export class Select2
                 # }
                 EntityData.prototype._normalizeItem = (item) ->
                     return
-                        id: item.id
+                        id: item?.id
                         text: @entities.getItemAttr(item, 'name', @attribute.entity, @options.get 'locale')
 
 
