@@ -261,6 +261,11 @@ export class Select2
                     attribute: @getAttribute('attribute')   # the attribute definition this select2 is used for
                     locale: @getAttribute('locale')
 
+                    # Results Adapter options
+                    sorter: (data) ->
+                        _.sortBy(data, 'text')
+
+                    # Adapter definition
                     dataAdapter: EntityData                 # TODO: write another Adapter for key() or obj() false!?
                     selectionAdapter: selectionAdapter
                     resultsAdapter: MultiselectResults
