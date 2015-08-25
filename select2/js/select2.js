@@ -974,6 +974,7 @@ S2.define('select2/results',[
 
       if (container.isOpen()) {
         self.setClasses();
+        self.ensureHighlightVisible();
       }
     });
 
@@ -5185,6 +5186,7 @@ S2.define('select2/core',[
           self.close();
 
           evt.preventDefault();
+          evt.stopImmediatePropagation();
         } else if (key === KEYS.ENTER) {
           self.trigger('results:select', {});
 
