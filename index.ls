@@ -40,10 +40,10 @@ export class Select2
         $.fn.select2.amd.require(
             ['select2/data/base',
              'select2/results',
-             'select2/selection/search', 'select2/selection/multiple', 'select2/selection/eventRelay',
+             'select2/selection/search',  'select2/selection/single', 'select2/selection/multiple', 'select2/selection/eventRelay',
              'select2/utils'],
             (BaseAdapter, Results,
-             SelectionSearch, MultipleSelection, EventRelay,
+             SelectionSearch, SingleSelection, MultipleSelection, EventRelay,
              Utils) !~>
 
                 # The EntityData Adapter: get the data from a racer model. Handles selection/deselection, etc.
@@ -100,12 +100,18 @@ export class Select2
                                 v = @entities.getItem v, @attribute.entity
 
                             item = @_normalizeItem v
-                            # id is the position to be able to deselect the correct one again
+
+                            # id is the position to be able to unselect the correct item again
                             # unselect gets this data (from current()), select gets the data from query() with the true id
-                            item.id = pos
+                            # BUT: in case of single selection, unselect is not needed and the results adapter needs the id
+                            # to display the selection in the dropdown (Results.prototype.setClasses)
+                            if @options.get('multiple')
+                                item.id = pos
+
                             data.push item
 
                     callback(data)
+
 
                 # add an item to the selection
                 #    data is the _normalize'd object with id and text
@@ -120,6 +126,9 @@ export class Select2
                     else
                         fn.call @value, @entities.getItem data.id, @attribute.entity
 
+                    @$element.val(@value.get!)
+                    @$element.trigger('change')
+
 
                 # remove an item from the selection
                 #    data is the _normalize'd object with id and text
@@ -127,6 +136,9 @@ export class Select2
                     return if not @options.get('multiple')
 
                     @value.remove data.id
+
+                    @$element.val(@value.get!)
+                    @$element.trigger('change')
 
 
                 # Get a set of options that are filtered based on the parameters that have
@@ -207,7 +219,8 @@ export class Select2
                                 originalEvent: evt,
                                 data: data
                         else
-                            @trigger 'toggle', originalEvent: evt
+                            @trigger 'toggle',
+                                originalEvent: evt
 
 
                 MultipleReorderSelection.prototype.update = (data) ->
@@ -231,12 +244,16 @@ export class Select2
 
                 ## select2 initialization
 
-                multiple =  !@getAttribute('single')
+                multiple = @getAttribute('multi')
 
-                selectionAdapter = MultipleReorderSelection
+                selectionAdapter = SingleSelection
+                resultsAdapter = Results
 
                 if (multiple)
+                    selectionAdapter = MultipleReorderSelection
                     selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
+                    resultsAdapter = MultiselectResults
+                # else
                 #     selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
 
                 @.$element.select2(
@@ -246,12 +263,11 @@ export class Select2
                     #maximumSelectionLength: 2
                     #minimumResultsForSearch: Infinity    # never show search box
                     multiple: multiple
-                    #closeOnSelect: !!@getAttribute('single')  # ? maybe?
                     tags: !@getAttribute('fixed')
 
                     order: true         # means selection oder is important and reodering is possible
-                    duplicates: true    # duplicate selections possible
-                    closeOnSelect: false
+                    duplicates: true    # duplicate selections possible - makes only sense with multiple
+                    closeOnSelect: !multiple
 
                     # EntityData Adapter options
                     model: @model
@@ -268,7 +284,7 @@ export class Select2
                     # Adapter definition
                     dataAdapter: EntityData                 # TODO: write another Adapter for key() or obj() false!?
                     selectionAdapter: selectionAdapter
-                    resultsAdapter: MultiselectResults
+                    resultsAdapter: resultsAdapter
                 )
 
         )
