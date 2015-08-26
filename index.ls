@@ -101,11 +101,13 @@ export class Select2
 
                             item = @_normalizeItem v
 
-                            # id is the position to be able to unselect the correct item again
-                            # unselect gets this data (from current()), select gets the data from query() with the true id
-                            # BUT: in case of single selection, unselect is not needed and the results adapter needs the id
-                            # to display the selection in the dropdown (Results.prototype.setClasses)
-                            if @options.get('multiple')
+                            # If duplicates can be selected, we need the position to be able to unselect the correct
+                            # item again. This is possible because unselect() gets its data from current() (this method),
+                            # select gets its data from query() with the true id.
+                            #
+                            # In all other cases, the results adapter needs the real id to display the selection
+                            # in the dropdown (Results.prototype.setClasses)
+                            if @options.get('duplicates')
                                 item.id = pos
 
                             data.push item
@@ -131,11 +133,12 @@ export class Select2
 
 
                 # remove an item from the selection
-                #    data is the _normalize'd object with id and text
-                EntityData.prototype.unselect = (data) ->
-                    return if not @options.get('multiple')
-
-                    @value.remove data.id
+                #    item is the _normalize'd object with id and text
+                EntityData.prototype.unselect = (item) ->
+                    if @options.get('duplicates')
+                        @value.remove item.id
+                    else if @options.get('multiple')
+                        @value.remove _.findIndex @value.get!, (id) -> id == item.id
 
                     @$element.val(@value.get!)
                     @$element.trigger('change')
@@ -188,7 +191,7 @@ export class Select2
 
                 MultiselectResults.prototype.render = ->
                     @$results = $('<ul class="select2-results__options" role="tree"></ul>')
-                    return @$results;
+                    return @$results
 
                 MultiselectResults.prototype.setClasses = ->
                     # don't set any selected classes to be able to re-select items
@@ -245,6 +248,7 @@ export class Select2
                 ## select2 initialization
 
                 multiple = @getAttribute('multi')
+                duplicates = multiple && @getAttribute('uniq') == false # duplicate selections possible - makes only sense with multiple
 
                 selectionAdapter = SingleSelection
                 resultsAdapter = Results
@@ -252,9 +256,11 @@ export class Select2
                 if (multiple)
                     selectionAdapter = MultipleReorderSelection
                     selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
-                    resultsAdapter = MultiselectResults
+                    if duplicates
+                        resultsAdapter = MultiselectResults
                 # else
                 #     selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
+
 
                 @.$element.select2(
                     #allowClear: true   # makes only sense with a placeholder!
@@ -263,11 +269,11 @@ export class Select2
                     #maximumSelectionLength: 2
                     #minimumResultsForSearch: Infinity    # never show search box
                     multiple: multiple
-                    tags: !@getAttribute('fixed')
-
-                    order: true         # means selection oder is important and reodering is possible
-                    duplicates: true    # duplicate selections possible - makes only sense with multiple
+                    duplicates: duplicates
                     closeOnSelect: !multiple
+                    reorder: true               # means selection oder is important and reodering is possible
+
+                    tags: !@getAttribute('fixed')
 
                     # EntityData Adapter options
                     model: @model
