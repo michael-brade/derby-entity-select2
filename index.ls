@@ -41,9 +41,10 @@ export class Select2
             ['select2/data/base',
              'select2/results',
              'select2/selection/search',  'select2/selection/single', 'select2/selection/multiple', 'select2/selection/eventRelay',
+             'select2/selection/placeholder', 'select2/selection/allowClear',
              'select2/utils'],
             (BaseAdapter, Results,
-             SelectionSearch, SingleSelection, MultipleSelection, EventRelay,
+             SelectionSearch, SingleSelection, MultipleSelection, EventRelay, Placeholder, AllowClear,
              Utils) !~>
 
                 # The EntityData Adapter: get the data from a racer model. Handles selection/deselection, etc.
@@ -139,6 +140,8 @@ export class Select2
                         @value.remove item.id
                     else if @options.get('multiple')
                         @value.remove _.findIndex @value.get!, (id) -> id == item.id
+                    else
+                        @value.del!
 
                     @$element.val(@value.get!)
                     @$element.trigger('change')
@@ -258,12 +261,14 @@ export class Select2
                     selectionAdapter = Utils.Decorate(MultipleReorderSelection, SelectionSearch)
                     if duplicates
                         resultsAdapter = MultiselectResults
-                # else
-                #     selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
+                else
+                    selectionAdapter = Utils.Decorate(selectionAdapter, Placeholder)
+                    selectionAdapter = Utils.Decorate(selectionAdapter, AllowClear)
+
+                #selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
 
 
                 @.$element.select2(
-                    #allowClear: true   # makes only sense with a placeholder!
                     width: "100%" # auto/resolve/element/style/function()
                     #language: @getAttribute('i18n')
                     #maximumSelectionLength: 2
@@ -273,6 +278,7 @@ export class Select2
                     closeOnSelect: !multiple
                     reorder: true               # means selection oder is important and reodering is possible
 
+                    placeholder: ''
                     tags: !@getAttribute('fixed')
 
                     # EntityData Adapter options
