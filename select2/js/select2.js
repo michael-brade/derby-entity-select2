@@ -4093,6 +4093,21 @@ S2.define('select2/dropdown/attachBody',[
     var resizeEvent = 'resize.select2.' + container.id;
     var orientationEvent = 'orientationchange.select2.' + container.id;
 
+    this.observer = new MutationObserver(function(mutationRecord, mutationObserver) {
+        requestAnimationFrame(function() {
+            self._positionDropdown();
+            self._resizeDropdown();
+        });
+    });
+
+    // hook up the watchers
+    this.observer.observe(document, {
+        attributes: true,
+        subtree: true,
+        childList: true,
+        characterData: true
+    });
+
     var $watchers = this.$container.parents().filter(Utils.hasScroll);
     $watchers.each(function () {
       $(this).data('select2-scroll-position', {
@@ -4122,6 +4137,7 @@ S2.define('select2/dropdown/attachBody',[
     $watchers.off(scrollEvent);
 
     $(window).off(scrollEvent + ' ' + resizeEvent + ' ' + orientationEvent);
+    this.observer.disconnect();
   };
 
   AttachBody.prototype._positionDropdown = function () {
