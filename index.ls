@@ -10,6 +10,7 @@ _ = require 'lodash'  # use prelude.ls ?
 export class Select2
 
     view: __dirname
+    style: __dirname
     name: 'd-select2'
 
 
@@ -269,6 +270,8 @@ export class Select2
 
 
                 @.$element.select2(
+                    theme: "bootstrap"
+
                     width: "100%" # auto/resolve/element/style/function()
                     #language: @getAttribute('i18n')
                     #maximumSelectionLength: 2
