@@ -1809,6 +1809,7 @@ S2.define('select2/selection/search',[
 
   Search.prototype.bind = function (decorated, container, $container) {
     var self = this;
+    this.container = container;
 
     decorated.call(this, container, $container);
 
@@ -1909,6 +1910,7 @@ S2.define('select2/selection/search',[
           return;
         }
 
+        self.container.open();
         self.handleSearch(evt);
       }
     );
@@ -1934,13 +1936,14 @@ S2.define('select2/selection/search',[
     var searchHadFocus = this.$search[0] == document.activeElement;
 
     this.$search.attr('placeholder', '');
+    this.$search.val('');
 
     decorated.call(this, data);
 
     this.$selection.find('.select2-selection__rendered')
                    .append(this.$searchContainer);
 
-    this.resizeSearch();
+    this.handleSearch();
     if (searchHadFocus) {
       this.$search.focus();
     }
@@ -1949,7 +1952,7 @@ S2.define('select2/selection/search',[
   Search.prototype.handleSearch = function () {
     this.resizeSearch();
 
-    if (!this._keyUpPrevented) {
+    if (!this._keyUpPrevented && this.container.isOpen()) {
       var input = this.$search.val();
 
       this.trigger('query', {
@@ -1967,7 +1970,8 @@ S2.define('select2/selection/search',[
 
     this.trigger('open', {});
 
-    this.$search.val(item.text + ' ');
+    this.$search.val(item.text);
+    this.handleSearch();
   };
 
   Search.prototype.resizeSearch = function () {
