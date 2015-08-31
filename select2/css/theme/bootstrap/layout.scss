@@ -1,3 +1,11 @@
+// Import custom Bootstrap variables
+@import 'bootstrap-variables';
+
+// Then import the global defaults so that changes cascade
+@import 'bootstrap/variables';
+@import 'bootstrap/mixins';
+
+
 /*! Select2 Bootstrap Theme v0.1.0-beta.4 | MIT License | github.com/select2/select2-bootstrap-theme */
 
 //
@@ -163,8 +171,8 @@ $clear-selection-color: $dropdown-arrow-color !default;
          */
 
         &[aria-disabled=true] {
-            color: $dropdown-link-disabled-color;
             cursor: $cursor-disabled;
+            color: $dropdown-link-disabled-color;
         }
 
         /**
@@ -172,8 +180,8 @@ $clear-selection-color: $dropdown-arrow-color !default;
          */
 
         &[aria-selected=true] {
-            background-color: $dropdown-link-hover-bg;
-            color: $dropdown-link-hover-color;
+            background-color: $dropdown-link-active-bg;
+            color: $dropdown-link-active-color;
         }
 
         /**
@@ -181,8 +189,8 @@ $clear-selection-color: $dropdown-arrow-color !default;
          */
 
         &--highlighted[aria-selected] {
-            background-color: $dropdown-link-active-bg;
-            color: $dropdown-link-active-color;
+            background-color: $dropdown-link-hover-bg;
+            color: $dropdown-link-hover-color;
         }
 
         .select2-results__option {
@@ -416,24 +424,24 @@ $clear-selection-color: $dropdown-arrow-color !default;
         }
 
         .select2-selection__placeholder {
-            color: $input-color-placeholder;
             float: left;
             margin-top: 5px;
+            color: $input-color-placeholder;
         }
 
         /**
-         * Make Multi Select2's choices match Bootstrap 3's default button styles.
+         * Make Multi Select2's choices match Bootstrap 3's primary button styles.
          */
 
         .select2-selection__choice {
-            color: $input-color;
-            background: $btn-default-bg;
-            border: 1px solid $btn-default-border;
-            border-radius: 4px;
-            cursor: default;
             float: left;
             margin: ($padding-base-vertical - 1) 0 0 $padding-base-horizontal/2;
+            border: 1px solid $btn-primary-border;
+            border-radius: 4px;
+            background: $brand-secondary-light; //$btn-primary-bg;
+            cursor: default;
             padding: 0 $padding-base-vertical;
+            color: $text-color;
         }
 
         /**
@@ -452,14 +460,14 @@ $clear-selection-color: $dropdown-arrow-color !default;
         }
 
         .select2-selection__choice__remove {
-            color: #999;
+            color: $btn-primary-color;
             cursor: pointer;
             display: inline-block;
             font-weight: bold;
             margin-right: $padding-base-vertical / 2;
 
             &:hover {
-                color: #333;
+                color: $text-color;
             }
         }
 
