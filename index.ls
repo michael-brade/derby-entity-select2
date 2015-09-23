@@ -1,9 +1,11 @@
-/*var _ = {
-    map: require('lodash/collection/map'),
-    get: require('lodash/object/get'),
-    find: require('lodash/collection/find')
-}*/
-_ = require 'lodash'  # use prelude.ls ?
+_ = {
+    findIndex: require('lodash/array/findIndex')
+    sortBy: require('lodash/collection/sortBy')
+}
+
+require! {
+    'derby-entities-lib/api': EntitiesApi
+}
 
 
 
@@ -30,7 +32,7 @@ export class Select2
         require 'select2'
 
         if (typeof jQuery.fn.select2 == 'undefined')
-            return console.log 'select2.js is required to run select2'
+            return console.error 'select2.js is required to run select2'
 
         @.$element = $(@input)
 
@@ -53,15 +55,14 @@ export class Select2
                 # Options:
                 #  - model: the racer model
                 #  - value: model path to current selection
-
-                #  - entities: the entities class instance
+                #
                 #  - attribute: select2 is always used for an attribute of an entity, this contains all the information,
                 #       like if value has references, which entity type, etc.
                 !function EntityData ($element, options)
                     @$element = $element;
                     @options = options;
 
-                    @entities = @options.get('entities')
+                    @entitiesApi = EntitiesApi.instance!
                     @attribute = @options.get('attribute')
 
                     @value = @options.get('model').at(@options.get('value'))
@@ -99,7 +100,7 @@ export class Select2
 
                         for let v, pos in currentVal
                             if @attribute.reference
-                                v = @entities.getItem v, @attribute.entity
+                                v = @entitiesApi.getItem v, @attribute.entity
 
                             item = @_normalizeItem v
 
@@ -128,7 +129,7 @@ export class Select2
                     if @attribute.reference
                         fn.call @value, data.id
                     else
-                        fn.call @value, @entities.getItem data.id, @attribute.entity
+                        fn.call @value, @entitiesApi.getItem data.id, @attribute.entity
 
                     @$element.val(@value.get!)
                     @$element.trigger('change')
@@ -162,7 +163,7 @@ export class Select2
                 EntityData.prototype.query = (params, callback) ->
                     data = []
 
-                    for let i in @entities.getItems(@attribute.entity)
+                    for let i in @entitiesApi.getItems(@attribute.entity)
                         matcher = @options.get('matcher')
 
                         item = @_normalizeItem i
@@ -181,7 +182,10 @@ export class Select2
                 EntityData.prototype._normalizeItem = (item) ->
                     return
                         id: item?.id
-                        text: @entities.getItemAttr(item, 'name', @attribute.entity, @options.get 'locale')
+                        text: @entitiesApi.renderAttribute(
+                                item,
+                                @entitiesApi.getEntity(@attribute.entity).attributes.name,
+                                @options.get 'locale')
 
 
                 /**
@@ -251,8 +255,10 @@ export class Select2
 
                 ## select2 initialization
 
-                multiple = @getAttribute('multi')
-                duplicates = multiple && @getAttribute('uniq') == false # duplicate selections possible - makes only sense with multiple
+                attribute = @getAttribute('attr')
+
+                multiple = attribute.multi
+                duplicates = multiple && attribute.uniq == false # duplicate selections possible - makes only sense with multiple
 
                 selectionAdapter = SingleSelection
                 resultsAdapter = Results
@@ -275,7 +281,7 @@ export class Select2
                     width: "100%" # auto/resolve/element/style/function()
                     #language: @getAttribute('i18n')
                     #maximumSelectionLength: 2
-                    #minimumResultsForSearch: Infinity    # never show search box
+                    #minimumResultsForSearch: Infinity  # never show search box
                     multiple: multiple
                     duplicates: duplicates
                     closeOnSelect: !multiple
@@ -286,10 +292,9 @@ export class Select2
 
                     # EntityData Adapter options
                     model: @model
-                    value: 'value'                          # model path to current selection
+                    value: 'value'                      # model path to current selection
 
-                    entities: @getAttribute('entities')     # the Entities instance
-                    attribute: @getAttribute('attribute')   # the attribute definition this select2 is used for
+                    attribute: attribute                # the attribute definition this select2 is used for
                     locale: @getAttribute('locale')
 
                     # Results Adapter options
@@ -297,9 +302,8 @@ export class Select2
                         _.sortBy(data, 'text')
 
                     # Adapter definition
-                    dataAdapter: EntityData                 # TODO: write another Adapter for key() or obj() false!?
+                    dataAdapter: EntityData             # TODO: write another Adapter for key() or obj() false!?
                     selectionAdapter: selectionAdapter
                     resultsAdapter: resultsAdapter
                 )
-
         )
