@@ -182,9 +182,9 @@ export class Select2
                 EntityData.prototype._normalizeItem = (item) ->
                     return
                         id: item?.id
-                        text: @entitiesApi.renderAttribute(
+                        text: @entitiesApi.render(
                                 item,
-                                @entitiesApi.getEntity(@attribute.entity).attributes.name,
+                                @attribute.entity,
                                 @options.get 'locale')
 
 
