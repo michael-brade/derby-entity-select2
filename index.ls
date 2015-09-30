@@ -177,15 +177,14 @@ export class Select2
                 # Turn an item into an object of the form
                 # {
                 #     id: itemId,
-                #     text: textToDisplay
+                #     text: text to display
+                #     html: optionally, html form of text
                 # }
                 EntityData.prototype._normalizeItem = (item) ->
                     return
                         id: item?.id
-                        text: @entitiesApi.render(
-                                item,
-                                @attribute.entity,
-                                @options.get 'locale')
+                        text: @entitiesApi.renderText(item, @attribute.entity, @options.get 'locale')
+                        html: @entitiesApi.render(item, @attribute.entity, @options.get 'locale')
 
 
                 /**
@@ -299,7 +298,19 @@ export class Select2
 
                     # Results Adapter options
                     sorter: (data) ->
-                        _.sortBy(data, 'text')
+                        _.sortBy data, 'text'
+
+                    templateResult: (result) ->
+                        if result.html
+                            $.parseHTML result.html
+                        else
+                            result.text
+
+                    templateSelection: (selection) ->
+                        if selection.html
+                            $.parseHTML selection.html
+                        else
+                            selection.text
 
                     # Adapter definition
                     dataAdapter: EntityData             # TODO: write another Adapter for key() or obj() false!?
