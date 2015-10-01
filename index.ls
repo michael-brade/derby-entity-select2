@@ -100,7 +100,7 @@ export class Select2
 
                         for let v, pos in currentVal
                             if @attribute.reference
-                                v = @entitiesApi.getItem v, @attribute.entity
+                                v = @entitiesApi.item v, @attribute.entity
 
                             item = @_normalizeItem v
 
@@ -129,7 +129,7 @@ export class Select2
                     if @attribute.reference
                         fn.call @value, data.id
                     else
-                        fn.call @value, @entitiesApi.getItem data.id, @attribute.entity
+                        fn.call @value, @entitiesApi.item data.id, @attribute.entity
 
                     @$element.val(@value.get!)
                     @$element.trigger('change')
@@ -163,7 +163,7 @@ export class Select2
                 EntityData.prototype.query = (params, callback) ->
                     data = []
 
-                    for let i in @entitiesApi.getItems(@attribute.entity)
+                    for let i in @entitiesApi.items(@attribute.entity)
                         matcher = @options.get('matcher')
 
                         item = @_normalizeItem i
@@ -183,7 +183,7 @@ export class Select2
                 EntityData.prototype._normalizeItem = (item) ->
                     return
                         id: item?.id
-                        text: @entitiesApi.renderText(item, @attribute.entity, @options.get 'locale')
+                        text: @entitiesApi.renderAsText(item, @attribute.entity, @options.get 'locale')
                         html: @entitiesApi.render(item, @attribute.entity, @options.get 'locale')
 
 
