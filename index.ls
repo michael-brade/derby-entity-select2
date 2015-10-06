@@ -183,8 +183,8 @@ export class Select2
                 EntityData.prototype._normalizeItem = (item) ->
                     return
                         id: item?.id
-                        text: @entitiesApi.renderAsText(item, @attribute.entity, @options.get 'locale')
-                        html: @entitiesApi.render(item, @attribute.entity, @options.get 'locale')
+                        text: @entitiesApi.renderAsText(item, @attribute.entity)
+                        html: @entitiesApi.render(item, @attribute.entity)
 
 
                 /**
@@ -294,7 +294,6 @@ export class Select2
                     value: 'value'                      # model path to current selection
 
                     attribute: attribute                # the attribute definition this select2 is used for
-                    locale: @getAttribute('locale')
 
                     # Results Adapter options
                     sorter: (data) ->
