@@ -1,12 +1,14 @@
 # Select2 component for Derby Entity
 
-Select2 [DerbyJS](http://github.com/codeparty/derby) component with improved usability for the
-[Derby Entity](https://github.com/michael-brade/derby-entity) CRUD component.
+This is a [DerbyJS](http://github.com/codeparty/derby) component for jQuery Select2 4.0 with a Racer
+model through [derby-entities-lib](https://github.com/michael-brade/derby-entities-lib).
+It features some improved usability for the [Derby Entity](https://github.com/michael-brade/derby-entity) CRUD component, and it adds support for re-ordering multi-selections with drag-and-drop.
+
 
 ## Dependencies
 
 * [derby-entities-lib](https://github.com/michael-brade/derby-entities-lib)
-* select2, included in this component
+* select2 4.0, included in this component
 * [Sortable](http://rubaxa.github.io/Sortable)
 
 
@@ -22,8 +24,21 @@ app.component(require('derby-entity-select2'));
 ### In your template
 
 ```html
-<view name="d-select2"></view>
+<view name="d-select2" fixed attr="{{entity.attributes.users}}" value="{{data}}"></view>
 ```
+
+Supported attributes:
+
+------|------
+fixed | boolean; if given, no new items may be added (allowing that is not implemented yet)
+value | model path where to store the selections, e.g. `"{{data}}"`
+attr  | an attribute object of an entity, this determines the items that can be selected
+
+
+## TODO
+
+Turn this component into an actual Derby view to make it reactive instead of using select2's jQuery DOM rendering code.
+
 
 ## License
 

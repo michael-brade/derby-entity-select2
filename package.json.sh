@@ -1,8 +1,8 @@
 #!/usr/local/bin/lsc -cj
 
 name: 'derby-entity-select2'
-description: 'Select2 Derby component with improved usability for Derby Entity'
-version: '1.0.0'
+description: 'Select2 4.0 Derby component with improved usability for Derby Entity'
+version: '1.0.1'
 
 author:
     name: 'Michael Brade'
@@ -12,6 +12,7 @@ keywords:
     'derby'
     'entity'
     'select2'
+    'racer'
 
 repository:
     type: 'git'
@@ -33,7 +34,7 @@ dependencies:
 
 
     # derby components
-    'derby-entities-lib': '1.0.x'
+    'derby-entities-lib': '1.1.x'
 
 devDependencies:
     'livescript': '1.x'
