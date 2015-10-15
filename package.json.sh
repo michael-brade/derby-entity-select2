@@ -2,7 +2,7 @@
 
 name: 'derby-entity-select2'
 description: 'Select2 4.0 Derby component with improved usability for Derby Entity'
-version: '1.0.1'
+version: '1.0.2'
 
 author:
     name: 'Michael Brade'
