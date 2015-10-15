@@ -29,6 +29,7 @@ app.component(require('derby-entity-select2'));
 
 Supported attributes:
 
+attribute | meaning
 ------|------
 fixed | boolean; if given, no new items may be added (allowing that is not implemented yet)
 value | model path where to store the selections, e.g. `"{{data}}"`
