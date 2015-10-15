@@ -238,12 +238,16 @@ export class Select2
                     $selection = @$selection.find('.select2-selection__rendered');
                     $selection.sortable(
                         animation: 200
+                        filter: '.select2-search'
 
                         # dragging started
                         onStart: (evt) ->
 
                         # dragging ended,  evt.oldIndex, evt.newIndex
                         onEnd: (evt) ->
+
+                        onMove: (evt) ->
+                            evt.related.className.indexOf('select2-search') === -1
 
                         onUpdate: (evt) ~>
                             return if evt.oldIndex == evt.newIndex
