@@ -2,7 +2,7 @@
 
 name: 'derby-entity-select2'
 description: 'Select2 4.0 Derby component with improved usability for Derby Entity'
-version: '1.0.2'
+version: '1.1.0'
 
 author:
     name: 'Michael Brade'
@@ -21,17 +21,14 @@ repository:
 dependencies:
     # utils
     'lodash': '3.x'
+    'jquery': '2.x'
+    'jquery-mousewheel': '*'
 
-    # the following are commented out because they are not immediate
-    # dependencies - the app needs to depend on those
 
+peerDependencies:
     # derby
-    #'derby': 'michael-brade/derby'
-
-    # racer
-    #'racer': 'michael-brade/racer'
-    #'racer-bundle': 'michael-brade/racer-bundle'
-
+    'derby': 'michael-brade/derby'
+    'racer-bundle': '0.2.x'
 
     # derby components
     'derby-entities-lib': '1.1.x'
@@ -39,6 +36,8 @@ dependencies:
 devDependencies:
     'livescript': '1.x'
     'node-sass': '3.3.x'
+
+    'require-globify': '1.x'
 
     # possibly, depending on how you set it up
     'browserify-livescript': '0.2.x'

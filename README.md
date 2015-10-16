@@ -8,7 +8,6 @@ It features some improved usability for the [Derby Entity](https://github.com/mi
 ## Dependencies
 
 * [derby-entities-lib](https://github.com/michael-brade/derby-entities-lib)
-* select2 4.0, included in this component
 * [Sortable](http://rubaxa.github.io/Sortable)
 
 

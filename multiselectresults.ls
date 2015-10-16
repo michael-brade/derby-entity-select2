@@ -3,6 +3,8 @@ require! {
     './select2/utils': Utils
 }
 
+module.exports = MultiselectResults
+
 /**
  *  MultiselectResults: allow clicking and choosing an already selected item again
  */

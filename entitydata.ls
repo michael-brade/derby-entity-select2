@@ -1,4 +1,6 @@
 require! {
+    'derby-entities-lib/api': EntitiesApi
+
     './select2/data/base': BaseAdapter
     './select2/results': Results
     './select2/utils': Utils
@@ -10,6 +12,7 @@ require! {
     ArrayAdapter: data from an array, create option elements and work with those
 */
 
+module.exports = EntityData
 
 # The EntityData Adapter: get the data from a racer model. Handles selection/deselection, etc.
 #

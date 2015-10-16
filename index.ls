@@ -6,12 +6,19 @@ _ = {
 require! {
     'derby-entities-lib/api': EntitiesApi
 
-    './select2/core': Select2
+    './jquery.select2': Select2
+
     './select2/selection/search': SelectionSearch
     './select2/selection/single': SingleSelection
     './select2/selection/eventRelay': EventRelay
     './select2/selection/placeholder': Placeholder
     './select2/selection/allowClear': AllowClear
+    './select2/results': Results
+    './select2/utils': Utils
+
+    './entitydata': EntityData
+    './multiplereorderselection': MultipleReorderSelection
+    './multiselectresults': MultiselectResults
 }
 
 
@@ -36,12 +43,6 @@ export class EntitySelect2
 
     create: (model, dom) !->
 
-        @$element = $(@input)
-
-
-
-
-
         ## select2 initialization
 
         attribute = @getAttribute('attr')
@@ -64,7 +65,7 @@ export class EntitySelect2
         #selectionAdapter = Utils.Decorate(selectionAdapter, EventRelay)
 
 
-        @.$element.select2(
+        $(@input).select2(
             theme: "bootstrap"
 
             width: "100%" # auto/resolve/element/style/function()

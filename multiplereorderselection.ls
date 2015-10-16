@@ -1,6 +1,9 @@
 require! {
     './select2/selection/multiple': MultipleSelection
+    './select2/utils': Utils
 }
+
+module.exports = MultipleReorderSelection
 
 /**
  *  MultipleReorderSelection: allow reodering a selection via drag&drop
