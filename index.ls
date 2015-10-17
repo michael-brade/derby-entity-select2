@@ -1,5 +1,4 @@
 _ = {
-    findIndex: require('lodash/array/findIndex')
     sortBy: require('lodash/collection/sortBy')
 }
 
@@ -27,7 +26,7 @@ export class EntitySelect2
 
     view: __dirname
     style: __dirname
-    name: 'd-select2'
+    name: 'd-select2'   # TODO: rename to 'entity-select2' for version 2.0.0
 
 
     # called on the server and the client before rendering

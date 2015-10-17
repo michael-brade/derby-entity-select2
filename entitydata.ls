@@ -6,6 +6,10 @@ require! {
     './select2/utils': Utils
 }
 
+_ = {
+    findIndex: require('lodash/array/findIndex')
+}
+
 
 /*
     SelectAdapter: find child elements with :select attribute set
