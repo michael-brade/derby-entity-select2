@@ -1,3 +1,6 @@
+**This module is now deprecated in favor of the native DerbyJS Select2 implementation, which can be found at [derby-select2](https://github.com/michael-brade/derby-select2).**
+
+
 # Select2 component for Derby Entity
 
 This is a [DerbyJS](http://github.com/codeparty/derby) component for jQuery Select2 4.0 with a Racer
